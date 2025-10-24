@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Halden Weather</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #f0f8ff;
+            padding: 50px;
+        }
+        h1 {
+            color: #333;
+        }
+        .weather {
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+        .icon {
+            width: 100px;
+            height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Været i Halden</h1>
+    <button onclick="getWeather()">Hent vær</button>
+    <div class="weather" id="weather"></div>
+
+    <script>
+        async function getWeather() {
+            const weatherDiv = document.getElementById('weather');
+            weatherDiv.innerHTML = "Laster værdata...";
+
+            const lat = 59.13;  // Halden latitude
+            const lon = 11.38;  // Halden longitude
+            const url = `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}`;
+
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'User-Agent': 'HaldenWeatherApp/1.0'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const now = new Date();
+                const timeseries = data.properties.timeseries;
+                const currentWeather = timeseries.find(t => new Date(t.time) >= now);
+
+                if (currentWeather) {
+                    const temp = currentWeather.data.instant.details.air_temperature;
+                    const symbol = currentWeather.data.next_1_hours?.summary.symbol_code || 'unknown';
+                    
+                    weatherDiv.innerHTML = `
+                        <p>Temperatur: ${temp} °C</p>
+                        <p>Vær: ${symbol.replace('_', ' ')}</p>
+                        <img class="icon" src="https://api.met.no/images/weathericons/${symbol}.png" alt="${symbol}">
+                    `;
+                } else {
+                    weatherDiv.innerHTML = "Kunne ikke finne gjeldende vær.";
+                }
+            } catch (error) {
+                console.error(error);
+                weatherDiv.innerHTML = "Feil ved henting av værdata.";
+            }
+        }
+    </script>
+</body>
+</html>
