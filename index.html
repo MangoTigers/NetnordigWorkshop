@@ -22,6 +22,11 @@
             width: 100px;
             height: 100px;
         }
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -34,38 +39,30 @@
             const weatherDiv = document.getElementById('weather');
             weatherDiv.innerHTML = "Laster værdata...";
 
-            const lat = 59.1330;  // Halden latitude
-            const lon = 11.3875;  // Halden longitude
-            const url = `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}`;
+            const lat = 59.1330;
+            const lon = 11.3875;
+            const yrUrl = `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}`;
+            const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(yrUrl);
 
             try {
-                const response = await fetch(url, {
-                    headers: {
-                        'User-Agent': 'HaldenWeatherApp/1.0'
-                    }
-                });
+                const response = await fetch(proxyUrl);
+                if (!response.ok) throw new Error('Feil ved henting av proxy');
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                const text = await response.json();
+                const data = JSON.parse(text.contents);
 
-                const data = await response.json();
                 const now = new Date();
                 const timeseries = data.properties.timeseries;
-                const currentWeather = timeseries.find(t => new Date(t.time) >= now);
+                const currentWeather = timeseries.find(t => new Date(t.time) >= now) || timeseries[0];
 
-                if (currentWeather) {
-                    const temp = currentWeather.data.instant.details.air_temperature;
-                    const symbol = currentWeather.data.next_1_hours?.summary.symbol_code || 'unknown';
-                    
-                    weatherDiv.innerHTML = `
-                        <p>Temperatur: ${temp} °C</p>
-                        <p>Vær: ${symbol.replace('_', ' ')}</p>
-                        <img class="icon" src="https://api.met.no/images/weathericons/${symbol}.png" alt="${symbol}">
-                    `;
-                } else {
-                    weatherDiv.innerHTML = "Kunne ikke finne gjeldende vær.";
-                }
+                const temp = currentWeather.data.instant.details.air_temperature;
+                const symbol = currentWeather.data.next_1_hours?.summary.symbol_code || 'unknown';
+
+                weatherDiv.innerHTML = `
+                    <p>Temperatur: ${temp} °C</p>
+                    <p>Vær: ${symbol.replace('_', ' ')}</p>
+                    <img class="icon" src="https://api.met.no/images/weathericons/${symbol}.png" alt="${symbol}">
+                `;
             } catch (error) {
                 console.error(error);
                 weatherDiv.innerHTML = "Feil ved henting av værdata.";
