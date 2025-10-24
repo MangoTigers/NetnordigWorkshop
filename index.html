@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Halden Weather</title>
+    <title>Vær i Halden</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -25,7 +25,7 @@
     </style>
 </head>
 <body>
-    <h1>Været i Halden</h1>
+    <h1>Vær i Halden</h1>
     <button onclick="getWeather()">Hent vær</button>
     <div class="weather" id="weather"></div>
 
@@ -34,8 +34,8 @@
             const weatherDiv = document.getElementById('weather');
             weatherDiv.innerHTML = "Laster værdata...";
 
-            const lat = 59.13;  // Halden latitude
-            const lon = 11.38;  // Halden longitude
+            const lat = 59.1330;  // Halden latitude
+            const lon = 11.3875;  // Halden longitude
             const url = `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}`;
 
             try {
